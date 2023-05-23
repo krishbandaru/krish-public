@@ -79,6 +79,7 @@ for src_file_path in song_list:
     
     copying_str = f"Copying {src_file_path} --> {dst_file_path}\n"
     print(copying_str)
+    # Use rsync so that successive runs only process updates
     cmd=f"rsync -ahiH --delete --exclude '@eaDir' --exclude '.DS_Store' --no-perms --delete {src_file_path} {dst_file_path}"
     print(f"Executing {cmd}")
 
