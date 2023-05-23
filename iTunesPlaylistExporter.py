@@ -6,9 +6,9 @@ import os
 import re
 from pathlib import Path
 
-
-ITUNES_FILENAME="/Users/krish/Projects/krish/MusicExport/songlist.m3u8"
-DST_ROOT_FOLDER="/Volumes/2TB/_export"
+# Change these two to match your actual names
+ITUNES_FILENAME="FullPathToExportedPlaylistFile.m3u8"
+DST_ROOT_FOLDER="FullPathToDestinationDirectory"
 song_list=[]
 
 if not os.path.exists(ITUNES_FILENAME):
