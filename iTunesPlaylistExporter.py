@@ -66,6 +66,9 @@ for src_file_path in song_list:
     album_name = head_tail[num_pieces-2]
     artist_name = head_tail[num_pieces-3]
 
+    # I really like to keep my existing full file paths so extract them from 
+    # the source path instead of recreating them from the file tags, assuming 
+    # they're there.
     dst_album_path = os.path.join(DST_ROOT_FOLDER,artist_name,album_name)
     dst_file_path = os.path.join(dst_album_path,song_name)
 
