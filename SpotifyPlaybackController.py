@@ -1,88 +1,52 @@
-""" 
-Script to control Spotify playback using basic client credentials.
-Therefore, only methods that don't require user auth are allowed.
-"""
+# Simple script to control Spotify playback
 
 import os
-from pprint import pprint
 from dotenv import load_dotenv
-from tinytag import TinyTag  # https://pypi.org/project/tinytag/
 from datetime import date, datetime
-import base64
-from requests import post, get
-import json
-
-def get_client_id():
-    return os.environ.get("SPOTIFY_CLIENT_ID")
-
-def get_client_secret():
-    return os.environ.get("SPOTIFY_CLIENT_SECRET")
-
-def get_itunes_filename():
-    return os.environ.get("ITUNES_FILENAME")
+import spotipy
+from spotipy.client import SpotifyException
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 
+# Pull secrets out of .env file (not checked in)
+load_dotenv()
+CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+# SCOPE = "user-library-read playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative user-read-currently-playing user-read-playback-state"
 
-def get_access_token(client_id, client_secret):
-    auth_string = client_id + ":" + client_secret
-    auth_enc = auth_string.encode("utf-8")
-    auth_base64 = str(base64.b64encode(auth_enc), "utf-8")
+SCOPE = "user-library-read playlist-read-private playlist-read-collaborative user-read-currently-playing user-read-playback-state user-modify-playback-state"
+
+def create_spotify_oauth():
+    oauth_mgr = SpotifyOAuth(
+        client_id=CLIENT_ID, 
+        client_secret=CLIENT_SECRET, 
+        redirect_uri="http://127.0.0.1:5000/auth", 
+        scope=SCOPE)
+    return spotipy.Spotify(oauth_manager=oauth_mgr)
+
+
+def get_current():
+    sp = create_spotify_oauth()
+    playing = sp.currently_playing(market='US')
+    if not playing:
+        return "Player Stopped"
     
-    URL = "https://accounts.spotify.com/api/token"
-    headers = {
-        "Authorization": "Basic " + auth_base64,
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    body = {"grant_type": "client_credentials"}
-    result = post(URL, headers=headers, data=body)
-    json_result = json.loads(result.content)
-    pprint(json_result)
-    try:
-        token = json_result["access_token"]
-    except:
-        token = None
-
-    return token
+    artist = playing['item']['artists'][0]['name']
+    track = playing['item']['name']
+    return f"{artist} / {track}"
 
 
-def get_auth_header(access_token):
-    return {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-        }
+def get_user():
+    sp = create_spotify_oauth()
+
+    user_info = sp.current_user()
+    user_id = user_info['id']
+    user_uri = user_info['uri']
+    return user_id, user_uri
 
 
-def get_user_id(access_token):
-    URL = "https://api.spotify.com/v1/me"
-    headers=get_auth_header(access_token)
-
-    result = get(URL, headers=headers)
-    json_result = json.loads(result.content)
-    
-
-
-def getSongList(filename):
-    count=0
-    song_list=[]
-    with open(filename, "r") as f:
-        lines = f.readlines()
-        for line in lines:
-            if line.startswith("#"):
-                pass
-            else:
-                song_list.append(line.strip())
-                count += 1
-    return count,song_list
-
-
-# Helps not have to do a lot of 
-# src_file_path = src_file_path.replace("'","\\'")"
-def escape_non_alphanumeric_chars(string):
-    escaped_string = re.sub(r'([^a-zA-Z0-9])', r'\\\1', string)
-    return escaped_string
-
-
-def create_playlist(access_token):
+def create_pl(user_id):
+    sp = create_spotify_oauth()
     # Create a uniquely named playlist since Spotify lets you reuse the 
     # same name for different ones and then it's hard to know which one is 
     # the latest.  Much easier to rename from within Spotify.
@@ -90,106 +54,66 @@ def create_playlist(access_token):
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     playlist_nane = f"iTunesExport-{dt_string}"
 
-    # Create Spotify Playlist and get an ID back
-    playlist_id = None
-    URL = "https://api.spotify.com/v1/users/me/playlists"
-    headers = get_auth_header(access_token)
-    body = {
-        "name": f"{playlist_nane}",
-        "description": "New playlist from iTunes",
-        "public": "false"
-    }
-    result = post(URL, headers=headers, data=body)
-    json_result = json.loads(result.content)
-    print(json_result)
-    exit()
+    playlist = sp.user_playlist_create(user_id, playlist_nane, public=False)
+    id = playlist['id']
+    return id
 
-    return playlist_id
-
-
-def add_to_playlist(playlist_id,song):
-
-    # add song to playlist
+def get_current_device():
+    sp = create_spotify_oauth()
+    devices = sp.devices()['devices']
+    current_devices = []
+    # TODO: Change to list comprehension
+    for dev in devices:
+        if dev['is_active']:
+            current_devices.append(dev['name'])
     
-    # return playlist_id
-    pass
+    return current_devices
 
 
+def start_playback():
+    sp = create_spotify_oauth()
+    sp.start_playback()
 
+
+def pause():
+    sp = create_spotify_oauth()
+    try:
+        sp.pause_playback()
+    except:
+        start_playback()
+
+
+def next():
+    sp = create_spotify_oauth()
+    sp.next_track()
+    
+
+def previous():
+    sp = create_spotify_oauth()
+    sp.previous_track()
+    
 
 def main():
-    
-    # Pull secrets out of .env file (not checked in)
-    load_dotenv()
+    user_id, user_uri = get_user()
+    print(user_id, user_uri)
 
-    client_id = get_client_id()
-    client_secret = get_client_secret()
-    itunes_filename = get_itunes_filename()
-    SPOTIFY_GET_CURRENT_TRACK_URL = 'https://api.spotify.com/v1/me/player/currently-playing'
-    SCOPE = "user-read-private user-read-email playlist-modify-public playlist-modify-private"
-
-    if not os.path.exists(itunes_filename):
-        print("**Source playlist file not found.")
-        exit()
-    
-    
-    access_token = get_access_token(client_id, client_secret)
-    if not access_token:
-        print("Error: unable to get access_token")
-        exit()
-
-    user_id = None        
-    user_id = get_user_id(access_token)
-    if not user_id:
-        print(f"Error: invalid user_id ({user_id})")
-        exit()
+    quit = False
+    while not quit:
+        print(f"Playing on {get_current_device()}")
+        print(get_current())
+        # time.sleep(10)
         
-    song_list = []
-    src_count = 0
-    src_count,song_list = getSongList(itunes_filename)
-
-    file_summary=f"{src_count} music files extracted from {itunes_filename}"
-    file_summary_len=len(file_summary)
-    print("\n")
-    print(file_summary_len*'=')
-    print(file_summary)
-    print(file_summary_len*'=')
-
-    """
-    Sample entry
-    /Users/user/Music/Music/Media.localized/Music/Artist/Album/01 Song.m4a
-    """
-    source_count = 0
-    found_count = 0
-    error_list = []
-    ret=1
-
-    playlist_id = create_playlist(access_token)
-    
-    if not playlist_id:
-        print("Error: Playlist could not be created.")
-        exit()
-
-    for song in song_list:
-        tag = TinyTag.get(song)
-        artist_name = tag.artist
-        album_name = tag.album
-        song_name = tag.title
-        
-        full_track = f"{artist_name}/{album_name}/{song_name}"
-        print (f"Adding: {full_track}")
-        # 1. lookup Spotify URI for track
-        # 2. if found, add track ID to playlist
-        # 3. else, print not found and add to error_list
-            # error_list.append(full_track)
-        exit()
-                
-        source_count = source_count + 1
+        key = input("[q]uit - [p]ause - [n]ext - pre[v]ious >   ")
+        if key in ["q", "Q"]:
+            quit = True
+            print("\nGoodbye")
+        elif key in ["n", "N"]:
+            next()
+        elif key in ["p","P"]:
+            pause()
+        elif key in ["v", "V"]:
+            previous()
 
 
-    print(f"Errors: {error_list}")
-    print(f"Source Count: {source_count}\nGood count: {found_count}\nError count: {len(error_list)}")
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
