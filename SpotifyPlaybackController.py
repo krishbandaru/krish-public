@@ -12,8 +12,6 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 load_dotenv()
 CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-# SCOPE = "user-library-read playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative user-read-currently-playing user-read-playback-state"
-
 SCOPE = "user-library-read playlist-read-private playlist-read-collaborative user-read-currently-playing user-read-playback-state user-modify-playback-state"
 
 def create_spotify_oauth():
