@@ -43,19 +43,6 @@ def get_user():
     return user_id, user_uri
 
 
-def create_pl(user_id):
-    sp = create_spotify_oauth()
-    # Create a uniquely named playlist since Spotify lets you reuse the 
-    # same name for different ones and then it's hard to know which one is 
-    # the latest.  Much easier to rename from within Spotify.
-    now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-    playlist_nane = f"iTunesExport-{dt_string}"
-
-    playlist = sp.user_playlist_create(user_id, playlist_nane, public=False)
-    id = playlist['id']
-    return id
-
 def get_current_device():
     sp = create_spotify_oauth()
     devices = sp.devices()['devices']
