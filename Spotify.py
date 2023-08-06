@@ -24,7 +24,7 @@ class Spotify:
 
 
     def get_current(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         playing = sp.currently_playing(market='US')
         if not playing:
             return "Player Stopped"
@@ -43,7 +43,7 @@ class Spotify:
 
 
     def get_current_device(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         devices = sp.devices()['devices']
         current_devices = []
         # TODO: Change to list comprehension
@@ -55,12 +55,12 @@ class Spotify:
 
 
     def start_playback(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         sp.start_playback()
 
 
     def pause(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         try:
             sp.pause_playback()
         except:
@@ -68,17 +68,17 @@ class Spotify:
 
 
     def next(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         sp.next_track()
         
 
     def previous(self):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         sp.previous_track()
         
 
     def create_pl(self, name):
-        sp = create_spotify_oauth()
+        sp = self.create_spotify_oauth()
         playlist = sp.user_playlist_create(self.user_id, 
                                            self.playlist_nane, 
                                            public=False)
