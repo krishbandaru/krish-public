@@ -3,6 +3,9 @@ Class to make it easier to reuse access to Spotify
 across diff apps.
 """
 
+
+import os
+from dotenv import load_dotenv
 from datetime import date, datetime
 import spotipy
 from spotipy.client import SpotifyException
@@ -55,28 +58,23 @@ class Spotify:
 
 
     def start_playback(self):
-        sp = self.create_spotify_oauth()
-        sp.start_playback()
-
+        _call_api("play")
 
     def pause(self):
-        sp = self.create_spotify_oauth()
-        try:
-            sp.pause_playback()
-        except:
-            start_playback()
-
+        self._call_api("pause")
 
     def next(self):
-        sp = self.create_spotify_oauth()
-        sp.next_track()
+        self._call_api("next")
         
 
     def previous(self):
-        sp = self.create_spotify_oauth()
-        sp.previous_track()
-        
+        self._call_api("previous")
 
+        
+    def play(self):
+        self._call_api("play")
+        
+        
     def create_pl(self, name):
         sp = self.create_spotify_oauth()
         playlist = sp.user_playlist_create(self.user_id, 
@@ -84,4 +82,56 @@ class Spotify:
                                            public=False)
         return playlist['id']
 
-    
+
+    def _call_api(self, action):
+        try:
+            sp = self.create_spotify_oauth()
+            match action:
+                case "pause":
+                    try:
+                        sp.pause_playback()
+                    except:
+                        raise
+                case "play":
+                    sp.start_playback()    
+                case "next":
+                    sp.next_track()
+                case "previous":
+                    sp.previous_track()                
+        except SpotifyException as e:
+            print(f"Error calling api: {e}")
+            
+            
+def main():
+    # Pull secrets out of .env file (not checked in)
+    load_dotenv()
+    CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+    CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+
+    spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
+
+    user_id, user_uri = spotify.get_user()
+    print(user_id, user_uri)
+
+    quit = False
+    while not quit:
+        print(f"\nPlaying on {spotify.get_current_device()}")
+        print(spotify.get_current())
+        # time.sleep(10)
+        
+        key = input("[q]uit - p[l]ay - [p]ause - [n]ext - pre[v]ious >   ")
+        if key in ["q", "Q"]:
+            quit = True
+            print("\nGoodbye")
+        elif key in ["n", "N"]:
+            spotify.next()
+        elif key in ["v", "V"]:
+            spotify.previous()
+        elif key in ["p","P"]:
+            spotify.pause()
+        elif key in ["l","L"]:
+            spotify.play()
+
+                        
+if __name__ == "__main__":
+    main()

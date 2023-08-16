@@ -13,4 +13,4 @@ spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
 user, user_uri = spotify.get_user()
 print(user, user_uri)
 print(spotify.get_current())
-
+spotify.next()
