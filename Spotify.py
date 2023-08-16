@@ -58,19 +58,17 @@ class Spotify:
 
 
     def start_playback(self):
-        _call_api("play")
+        self._call_api("play")
 
     def pause(self):
         self._call_api("pause")
 
     def next(self):
         self._call_api("next")
-        
 
     def previous(self):
         self._call_api("previous")
 
-        
     def play(self):
         self._call_api("play")
         
