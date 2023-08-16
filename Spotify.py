@@ -115,11 +115,14 @@ def main():
 
     quit = False
     while not quit:
-        print(f"\nPlaying on {spotify.get_current_device()}")
-        print(spotify.get_current())
-        # time.sleep(10)
+        print(f"\n{user_id} playing on {spotify.get_current_device()}")
+        current = spotify.get_current()
+
+        print(len(current)*'=')
+        print(current)
+        print(len(current)*'=')
         
-        key = input("[q]uit - p[l]ay - [p]ause - [n]ext - pre[v]ious >   ")
+        key = input("\n[q]uit - p[l]ay - [p]ause - [n]ext - pre[v]ious >   ")
         if key in ["q", "Q"]:
             quit = True
             print("\nGoodbye")
