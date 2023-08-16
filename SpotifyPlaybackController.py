@@ -55,28 +55,28 @@ def get_current_device():
     return current_devices
 
 
-def start_playback():
-    sp = create_spotify_oauth()
-    sp.start_playback()
-
-
-def pause():
-    sp = create_spotify_oauth()
+def pause(sp):
     try:
         sp.pause_playback()
     except:
-        start_playback()
+        call_api("play")
 
-
-def next():
-    sp = create_spotify_oauth()
-    sp.next_track()
     
+def call_api(action):
+    try:
+        sp = create_spotify_oauth()
+        match action:
+            case "pause":
+                pause(sp)
+            case "play":
+                sp.start_playback()    
+            case "next":
+                sp.next_track()
+            case "previous":
+                sp.previous_track()                
+    except SpotifyException as e:
+        print(f"Error calling api: {e}")
 
-def previous():
-    sp = create_spotify_oauth()
-    sp.previous_track()
-    
 
 def main():
     user_id, user_uri = get_user()
@@ -88,17 +88,19 @@ def main():
         print(get_current())
         # time.sleep(10)
         
-        key = input("[q]uit - [p]ause - [n]ext - pre[v]ious >   ")
+        key = input("[q]uit - p[l]ay - [p]ause - [n]ext - pre[v]ious >   ")
         if key in ["q", "Q"]:
             quit = True
             print("\nGoodbye")
         elif key in ["n", "N"]:
-            next()
-        elif key in ["p","P"]:
-            pause()
+            call_api("next")
         elif key in ["v", "V"]:
-            previous()
+            call_api("previous")
+        elif key in ["p","P"]:
+            call_api("pause")
+        elif key in ["l","L"]:
+            call_api("play")
 
-
+                        
 if __name__ == "__main__":
     main()
