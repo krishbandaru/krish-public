@@ -13,4 +13,7 @@ spotify = Spotify(CLIENT_ID, CLIENT_SECRET)
 user, user_uri = spotify.get_user()
 print(user, user_uri)
 print(spotify.get_current())
-spotify.next()
+# spotify.next()
+
+results = spotify.search("track:Money%20artist:Pink%20Floyd")
+print(results)

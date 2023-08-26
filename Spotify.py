@@ -12,10 +12,13 @@ from spotipy.client import SpotifyException
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 class Spotify:
-    def __init__(self, CLIENT_ID, CLIENT_SECRET):
+    def __init__(self, CLIENT_ID=None, CLIENT_SECRET=None):
         self.CLIENT_ID = CLIENT_ID
         self.CLIENT_SECRET = CLIENT_SECRET
         self.SCOPE = "user-library-read playlist-read-private playlist-read-collaborative user-read-currently-playing user-read-playback-state user-modify-playback-state"
+        
+        if CLIENT_ID==None or CLIENT_SECRET==None:
+            raise Exception("ClientID and/or ClientSecret not set.")
 
     def create_spotify_oauth(self):
         oauth_mgr = SpotifyOAuth(
@@ -58,20 +61,25 @@ class Spotify:
 
 
     def start_playback(self):
-        self._call_api("play")
+        self._call_playback_api("play")
 
     def pause(self):
-        self._call_api("pause")
+        self._call_playback_api("pause")
 
     def next(self):
-        self._call_api("next")
+        self._call_playback_api("next")
 
     def previous(self):
-        self._call_api("previous")
+        self._call_playback_api("previous")
 
     def play(self):
-        self._call_api("play")
+        self._call_playback_api("play")
         
+
+    def search(self, str):
+        sp = self.create_spotify_oauth()
+        return sp.search(str)
+
         
     def create_pl(self, name):
         sp = self.create_spotify_oauth()
@@ -81,7 +89,7 @@ class Spotify:
         return playlist['id']
 
 
-    def _call_api(self, action):
+    def _call_playback_api(self, action):
         try:
             sp = self.create_spotify_oauth()
             match action:
@@ -119,11 +127,11 @@ def main():
         print(len(current)*'=')
         print(current)
         print(len(current)*'=')
-        
+
         key = input("\n[q]uit - p[l]ay - [p]ause - [n]ext - pre[v]ious >   ")
         if key in ["q", "Q"]:
             quit = True
-            print("\nGoodbye")
+            print("Goodbye")
         elif key in ["n", "N"]:
             spotify.next()
         elif key in ["v", "V"]:
