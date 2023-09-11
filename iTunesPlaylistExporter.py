@@ -7,11 +7,13 @@ server.
 import os
 import re
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Change these two to match your actual names
-ITUNES_FILENAME="FullPathToExportedPlaylistFile.m3u8"
-DST_ROOT_FOLDER="FullPathToDestinationDirectory"
-song_list=[]
+# Pull values out of .env file (not checked in)
+load_dotenv()
+ITUNES_FILENAME=os.environ.get("ITUNES_FILENAME")
+DST_ROOT_FOLDER=os.environ.get("MUSIC_EXPORT_FOLDER")
 
 if not os.path.exists(ITUNES_FILENAME):
     print("**Source playlist file not found.")
@@ -21,6 +23,7 @@ if not os.path.exists(DST_ROOT_FOLDER):
     print("**Destination not found.")
     exit()
 
+song_list=[]
 
 def getSongList(filename):
     count=0
