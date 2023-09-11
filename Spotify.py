@@ -3,7 +3,6 @@ Class to make it easier to reuse access to Spotify
 across diff apps.
 """
 
-
 import os
 from dotenv import load_dotenv
 from datetime import date, datetime
@@ -141,6 +140,6 @@ def main():
         elif key in ["l","L"]:
             spotify.play()
 
-                        
+
 if __name__ == "__main__":
     main()
